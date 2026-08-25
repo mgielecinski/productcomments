@@ -28,11 +28,88 @@
 </script>
 
 <div id="product-comments-list-header">
-  <div class="comments-nb">
-    <i class="material-icons chat" data-icon="chat"></i>
-    {l s='Comments' d='Modules.Productcomments.Shop'} ({$nb_comments})
+  <h2>
+    {l s='Comments' d='Modules.Productcomments.Shop'}
+  </h2>
+
+  {if $nb_comments > 0 && $post_allowed}
+    <div id="product-comments-list-btn-group">
+      <button class="btn btn-comment btn-comment-big post-product-comment">
+        <i class="material-icons">edit</i>
+        {l s='Write your review' d='Modules.Productcomments.Shop'}
+      </button>
+    </div>
+  {/if}
+</div>
+ 
+{if $nb_comments > 0}
+  <div class="product-comments-summary">
+
+    <div class="product-comments-summary__left">
+      <div class="product-comments-summary__score-container">
+        <span class="product-comments-summary__average-score">{$average_grade|number_format:1}</span>
+        <span class="product-comments-summary__max-score">/5.0</span>
+      </div>
+
+      <div class="product-comments-summary__stars">
+        <div class="grade-stars" data-grade="{$average_grade}"></div>
+      </div>
+
+      <div class="product-comments-summary__count-info text-muted small">
+        {if $nb_comments > 1}
+          {l s='Based on %s opinions' sprintf=[$nb_comments] d='Modules.Productcomments.Shop'}
+        {else}
+          {l s='Based on %s opinion' sprintf=[$nb_comments] d='Modules.Productcomments.Shop'}
+        {/if}
+      </div>
+    </div>
+
+    <div class="product-comments-summary__right">   
+      <div class="product-comments-summary__grade-list">
+        {foreach $summary as $grade => $details}
+          <div class="product-comments-summary__grade-item">
+            <div class="product-comments-summary__grade-label">
+              <span class="product-comments-summary__grade-value">{$grade}</span>
+              <div class="product-comments-summary__star-icon">
+                <div class="star-content" role="img">
+                  <div class="star-on"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div
+              class="product-comments-summary__progress progress"
+              role="progressbar"
+              aria-label="{if $grade > 1}{l s='%s stars' sprintf=[$grade] d='Modules.Productcomments.Shop'}{else}{l s='%s star' sprintf=[$grade] d='Modules.Productcomments.Shop'}{/if}"
+              aria-valuenow="{$details.percent|number_format:2}"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div class="product-comments-summary__progress-bar progress-bar bg-primary" style="width: {$details.percent|number_format:2}%;"></div>
+            </div>
+            
+            <div class="product-comments-summary__stats small">
+              <span class="product-comments-summary__count">{$details.count}</span>
+            </div>
+          </div>
+        {/foreach}
+      </div>
+    </div>
   </div>
-  {include file='module:productcomments/views/templates/hook/average-grade-stars.tpl' grade=$average_grade}
+{else}
+  {include file='module:productcomments/views/templates/hook/empty-product-comment.tpl'}
+{/if}
+
+<div class="form-group product-comments-sorting mb-3">
+    <label for="comment-sort-select">{l s='Sortuj opinie według:' d='Modules.Productcomments.Shop'}</label>
+    <select class="form-control" id="comment-sort-select">
+      <option value="date_add.desc">{l s='Najnowsze' d='Modules.Productcomments.Shop'}</option>
+      <option value="date_add.asc">{l s='Najstarsze' d='Modules.Productcomments.Shop'}</option>
+      <option value="grade.desc">{l s='Ocena: od najwyższej' d='Modules.Productcomments.Shop'}</option>
+      <option value="grade.asc">{l s='Ocena: od najniższej' d='Modules.Productcomments.Shop'}</option>
+      <option value="usefulness.desc">{l s='usefulness: od najwyższej' d='Modules.Productcomments.Shop'}</option>
+      <option value="usefulness.asc">{l s='usefulness: od najniższej' d='Modules.Productcomments.Shop'}</option>
+    </select>
 </div>
 
 {include file='module:productcomments/views/templates/hook/product-comment-item-prototype.tpl' assign="comment_prototype"}
@@ -44,6 +121,8 @@
   data-report-comment-url="{$report_comment_url nofilter}"
   data-comment-item-prototype="{$comment_prototype|escape:'html'}"
   data-current-page="1"
+  data-current-sort-by="date_add"
+  data-current-sort-way="desc"
   data-total-pages="{$list_total_pages}">
 </div>
 
@@ -61,12 +140,6 @@
       </ul>
     {/if}
   </div>
-  {if $post_allowed && $nb_comments != 0}
-    <button class="btn btn-comment btn-comment-big post-product-comment">
-      <i class="material-icons edit" data-icon="edit"></i>
-      {l s='Write your review' d='Modules.Productcomments.Shop'}
-    </button>
-  {/if}
 </div>
 
 {* Appreciation post error modal *}

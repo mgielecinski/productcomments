@@ -31,6 +31,10 @@ class ProductCommentsListCommentsModuleFrontController extends ModuleFrontContro
     {
         $idProduct = (int) Tools::getValue('id_product');
         $page = (int) Tools::getValue('page', 1);
+
+        $sortBy = Tools::getValue('sort_by', 'date_add');
+        $sortWay = Tools::getValue('sort_way', 'desc');
+
         $isLastNameAnonymous = Configuration::get('PRODUCT_COMMENTS_ANONYMISATION');
         /** @var ProductCommentRepository $productCommentRepository */
         $productCommentRepository = $this->context->controller->getContainer()->get('product_comment_repository');
@@ -39,7 +43,9 @@ class ProductCommentsListCommentsModuleFrontController extends ModuleFrontContro
             $idProduct,
             $page,
             (int) Configuration::get('PRODUCT_COMMENTS_COMMENTS_PER_PAGE'),
-            (bool) Configuration::get('PRODUCT_COMMENTS_MODERATE')
+            (bool) Configuration::get('PRODUCT_COMMENTS_MODERATE'),
+            $sortBy,
+            $sortWay
         );
         $productCommentsNb = $productCommentRepository->getCommentsNumber(
             $idProduct,
@@ -50,6 +56,8 @@ class ProductCommentsListCommentsModuleFrontController extends ModuleFrontContro
             'comments_nb' => $productCommentsNb,
             'comments_per_page' => Configuration::get('PRODUCT_COMMENTS_COMMENTS_PER_PAGE'),
             'comments' => [],
+            'current_sort_by' => $sortBy,
+            'current_sort_way' => $sortWay,
         ];
 
         foreach ($productComments as $productComment) {

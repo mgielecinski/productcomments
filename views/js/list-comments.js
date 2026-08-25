@@ -39,6 +39,7 @@ jQuery(document).ready(function () {
   const nextCount = totalPages + 1;
   const gapText = '&hellip;';
 
+  $('.product-comments-summary__stars .grade-stars').rating();
   $('#product-comments-list .grade-stars').rating();
   $('.product-comments-additional-info .grade-stars').rating();
 
@@ -47,6 +48,7 @@ jQuery(document).ready(function () {
   })
 
   document.addEventListener('updateRating', function() {
+    $('.product-comments-summary__stars .grade-stars').rating();
     $('#product-comments-list .grade-stars').rating();
     $('.product-comments-additional-info .grade-stars').rating();
   });
@@ -67,14 +69,27 @@ jQuery(document).ready(function () {
     reportCommentPostErrorModal.modal('show');
   }
 
-  async function fetchComments(page) {  
-    let response = await fetch(commentsListUrl + "&page=" + page);
+  async function fetchComments(page, sortBy = 'date_add', sortWay = 'DESC') {  
+    let response = await fetch(commentsListUrl + "&page=" + page + '&sort_by=' + sortBy + '&sort_way=' + sortWay);
 
     if (response.status === 200) {
         let data = await response.text();
         populateComments((JSON.parse(data)).comments);
     }
   }
+
+  $('#comment-sort-select').on('change', function() {
+    let currentPage = commentsList.data('current-page');
+
+    let splitVal = $(this).val().split('.');
+    let sortBy = splitVal[0];
+    let sortWay = splitVal[1];
+
+    commentsList.data('current-sort-by', sortBy);
+    commentsList.data('current-sort-way', sortWay);
+    
+    fetchComments(currentPage, sortBy, sortWay); 
+});
   
   $(pagesListId + ' li').on('click',
     function() {
@@ -92,8 +107,11 @@ jQuery(document).ready(function () {
       
       $(`${pageIdPrefix}${oldCount} span`).removeClass('current');
       $(`${pageIdPrefix}${oldCount}`).removeClass('active');
+
+      let currentSortBy = commentsList.data('current-sort-by');
+      let currentSortWay = commentsList.data('current-sort-way');
       
-      fetchComments(newCount); // fetch new page's comments                  
+      fetchComments(newCount, currentSortBy, currentSortWay); // fetch new page's comments                  
 
       $(`${pageIdPrefix}${newCount}`).addClass('active');
       $(`${pageIdPrefix}${newCount} span`).addClass('current');
